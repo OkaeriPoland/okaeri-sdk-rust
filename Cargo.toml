@@ -28,3 +28,4 @@ hyper-timeout = "0.4.1"
 serde_json = "1.0.64"
 serde = { version = "1.0.124", features = ["derive"]}
 serde_derive = "1.0.124"
+maplit = "1.0.2"

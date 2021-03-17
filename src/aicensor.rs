@@ -1,11 +1,11 @@
-use crate::OkaeriSdkError;
 use crate::client::OkaeriClient;
+use crate::OkaeriSdkError;
+use serde::Deserialize;
 use serde_json::json;
+use std::collections::HashMap;
 use std::env;
 use std::time::Duration;
 use url::Url;
-use std::collections::HashMap;
-use serde::{Deserialize};
 
 type Result<T> = std::result::Result<T, OkaeriSdkError>;
 
@@ -43,7 +43,7 @@ pub struct CensorPredictionInfo {
 }
 
 pub struct AiCensor {
-    client: OkaeriClient
+    client: OkaeriClient,
 }
 
 impl AiCensor {
@@ -51,23 +51,25 @@ impl AiCensor {
         AiCensor::new_with_config(token, None, None)
     }
 
-    pub fn new_with_config<S: Into<String>>(token: S, base_url: Option<&str>, timeout: Option<Duration>) -> Result<Self> {
+    pub fn new_with_config<S: Into<String>>(
+        token: S,
+        base_url: Option<&str>,
+        timeout: Option<Duration>,
+    ) -> Result<Self> {
         let base_url = OkaeriClient::read_base_url(
             base_url,
             "https://ai-censor.okaeri.eu",
-            "OKAERI_SDK_AICENSOR_BASE_PATH")?;
-        let timeout = OkaeriClient::read_timeout(
-            timeout,
-            Duration::from_secs(5),
-            "OKAERI_SDK_TIMEOUT")?;
-        let headers = OkaeriClient::singleton_map(
-            String::from("Token"), token.into());
+            "OKAERI_SDK_AICENSOR_BASE_PATH",
+        )?;
+        let timeout =
+            OkaeriClient::read_timeout(timeout, Duration::from_secs(5), "OKAERI_SDK_TIMEOUT")?;
+        let headers = maplit::hashmap! { String::from("token") => token.into() };
         let client = OkaeriClient::new(base_url, timeout, headers)?;
         Ok(AiCensor { client })
     }
 
     pub(crate) async fn get_prediction(self, phrase: &str) -> Result<CensorPredictionInfo> {
         let body = json!({"phrase": phrase.to_owned()});
-        self.client.post::<CensorPredictionInfo>("/predict", &*body.to_string()).await
+        self.client.post("/predict", &*body.to_string()).await
     }
 }
