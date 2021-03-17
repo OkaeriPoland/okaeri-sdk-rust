@@ -6,6 +6,7 @@ use crate::OkaeriSdkError;
 use std::time::Duration;
 use url::Url;
 use std::collections::HashMap;
+use std::env;
 
 type Result<T> = std::result::Result<T, OkaeriSdkError>;
 
@@ -24,6 +25,33 @@ impl OkaeriClient {
         connector.set_write_timeout(Some(timeout));
         let hyper = Client::builder().build::<_, hyper::Body>(connector);
         Ok(OkaeriClient { base_url, hyper, headers })
+    }
+
+    pub(crate) fn read_base_url(provided: Option<&str>, def: &str, env_name: &str) -> Result<Url> {
+        let base_url = match env::var(env_name) {
+            Ok(value) => value,
+            Err(_) => String::from(provided.unwrap_or(def))
+        };
+        let base_url = Url::parse(base_url.as_str())
+            .map_err(|source| OkaeriSdkError::InvalidUrl { url: base_url, source })?;
+        Ok(base_url)
+    }
+
+    pub(crate) fn read_timeout(provided: Option<Duration>, def: Duration, env_name: &str) -> Result<Duration> {
+        let timeout = match env::var(env_name) {
+            Ok(from) => {
+                let value = from.parse::<u64>().map_err(|_| OkaeriSdkError::InvalidInt { from })?;
+                Duration::from_millis(value)
+            }
+            Err(_) => provided.unwrap_or(def)
+        };
+        Ok(timeout)
+    }
+
+    pub(crate) fn singleton_map<K, V>(key: K, value: V) -> HashMap<K, V> {
+        let mut headers: HashMap<K, V> = HashMap::new();
+        headers.insert(key, value);
+        return headers
     }
 
     pub(crate) async fn post<T>(self, path: &str, body: &str) -> Result<T> {
