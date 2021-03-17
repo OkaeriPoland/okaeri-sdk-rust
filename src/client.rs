@@ -66,12 +66,31 @@ impl OkaeriClient {
     where
         T: DeserializeOwned,
     {
+        self.request(path, body, Method::POST).await
+    }
+
+    pub(crate) async fn get<T>(self, path: impl AsRef<str>) -> Result<T>
+    where
+        T: DeserializeOwned,
+    {
+        self.request(path, "", Method::GET).await
+    }
+
+    async fn request<T>(
+        self,
+        path: impl AsRef<str>,
+        body: impl Into<String>,
+        method: impl Into<Method>,
+    ) -> Result<T>
+    where
+        T: DeserializeOwned,
+    {
         let path = path.as_ref();
         let body = body.into();
+        let method = method.into();
 
         let url = format!("{}{}", self.base_url, path);
-
-        let mut req = Request::builder().method(Method::POST).uri(url);
+        let mut req = Request::builder().method(method).uri(url);
 
         for (key, value) in self.headers {
             req = req.header(key.as_str(), value.as_str());

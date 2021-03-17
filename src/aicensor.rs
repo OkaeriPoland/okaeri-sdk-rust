@@ -63,7 +63,7 @@ impl AiCensor {
         )?;
         let timeout =
             OkaeriClient::read_timeout(timeout, Duration::from_secs(5), "OKAERI_SDK_TIMEOUT")?;
-        let headers = maplit::hashmap! { String::from("token") => token.into() };
+        let headers = maplit::hashmap! { String::from("Token") => token.into() };
         let client = OkaeriClient::new(base_url, timeout, headers)?;
         Ok(AiCensor { client })
     }
