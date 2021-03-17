@@ -8,7 +8,10 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum OkaeriSdkError {
     #[error("url '{url}' is invalid: {source:?}")]
-    InvalidUrl { url: String, source: url::ParseError },
+    InvalidUrl {
+        url: String,
+        source: url::ParseError,
+    },
     #[error("cannot parse '{from}' to int")]
     InvalidInt { from: String },
     #[error("{group}: {message}")]
@@ -19,14 +22,17 @@ pub enum OkaeriSdkError {
 
 #[cfg(test)]
 mod tests {
-    use actix_rt::test;
     use crate::aicensor::AiCensor;
 
-    #[actix_rt::test]
-    async fn aicensor() {
+    type TestResult = std::result::Result<(), Box<dyn std::error::Error + Send + Sync>>;
+
+    #[tokio::test]
+    async fn aicensor() -> TestResult {
         let aicensor = AiCensor::new("")?;
         let prediction = aicensor.get_prediction("hehe").await?;
         let swear = prediction.general.swear;
         println!("swear: {}", swear);
+
+        Ok(())
     }
 }
