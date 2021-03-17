@@ -1,0 +1,21 @@
+[package]
+name          = "okaeri-sdk"
+version       = "1.0.0"
+authors       = ["Dawid Sawicki <dawid@okaeri.eu>"]
+license       = "AGPL-3.0"
+readme        = "README.md"
+repository    = "https://github.com/OkaeriPoland/okaeri-sdk-rust"
+homepage      = "https://github.com/OkaeriPoland/okaeri-sdk-rust#readme"
+documentation = "https://github.com/OkaeriPoland/okaeri-sdk-rust#readme"
+description   = "Okaeri Services SDK"
+keywords      = ["api"]
+categories    = ["api-bindings"]
+edition       = "2018"
+include       = [
+  "Cargo.toml",
+  "LICENSE",
+  "README.md",
+  "src/**/*.rs",
+]
+
+[dependencies]
