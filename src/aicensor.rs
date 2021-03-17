@@ -1,51 +1,49 @@
 use crate::OkaeriSdkError;
-use hyper::{Body, Client, Method, Request};
-use hyper_tls::HttpsConnector;
+use crate::client::OkaeriClient;
 use serde_json::json;
 use std::env;
 use std::time::Duration;
 use url::Url;
-use hyper_timeout::TimeoutConnector;
+use std::collections::HashMap;
+use serde::{Deserialize};
 
 type Result<T> = std::result::Result<T, OkaeriSdkError>;
 
 #[allow(dead_code)]
 #[derive(Deserialize)]
 pub struct CensorPredictionInfoGeneral {
-    pub(crate) swear: bool,
-    pub(crate) breakdown: String,
-    pub(crate) domains: bool,
+    pub swear: bool,
+    pub breakdown: String,
+    pub domains: bool,
 }
 
 #[allow(dead_code)]
 #[derive(Deserialize)]
 pub struct CensorPredictionInfoDetails {
-    pub(crate) basic_contains_hit: bool,
-    pub(crate) exact_match_hit: bool,
-    pub(crate) ai_label: String,
-    pub(crate) ai_probability: f64,
-    pub(crate) domains_list: Vec<String>,
+    pub basic_contains_hit: bool,
+    pub exact_match_hit: bool,
+    pub ai_label: String,
+    pub ai_probability: f64,
+    pub domains_list: Vec<String>,
 }
 
 #[allow(dead_code)]
 #[derive(Deserialize)]
 pub struct CensorPredictionInfoElapsed {
-    pub(crate) all: f64,
-    pub(crate) processing: f64,
+    pub all: f64,
+    pub processing: f64,
 }
 
 #[allow(dead_code)]
 #[derive(Deserialize)]
 pub struct CensorPredictionInfo {
-    pub(crate) general: CensorPredictionInfoGeneral,
-    pub(crate) details: CensorPredictionInfoDetails,
-    pub(crate) elapsed: CensorPredictionInfoElapsed,
+    pub general: CensorPredictionInfoGeneral,
+    pub details: CensorPredictionInfoDetails,
+    pub elapsed: CensorPredictionInfoElapsed,
 }
 
 pub struct AiCensor {
-    base_url: Url,
-    token: String,
-    timeout: Duration,
+    client: OkaeriClient
 }
 
 impl AiCensor {
@@ -72,61 +70,17 @@ impl AiCensor {
             Err(_) => timeout.unwrap_or(Duration::from_secs(5))
         };
 
-        Ok(AiCensor { base_url, timeout, token })
+        let mut headers: HashMap<String, String> = HashMap::new();
+        headers.insert(String::from("Token"), token);
+
+        let client = OkaeriClient::new(base_url, timeout, headers)?;
+        Ok(AiCensor { client })
     }
 
     pub(crate) async fn get_prediction(self, phrase: &str) -> Result<CensorPredictionInfo> {
-        let url = format!("{}/predict", self.base_url);
         let body = json!({
             "phrase": phrase.to_owned()
         });
-
-        let https = HttpsConnector::new();
-        let mut connector = TimeoutConnector::new(https);
-        connector.set_connect_timeout(Some(self.timeout));
-        connector.set_read_timeout(Some(self.timeout));
-        connector.set_write_timeout(Some(self.timeout));
-        let client = Client::builder().build::<_, hyper::Body>(connector);
-
-        let req = Request::builder()
-            .method(Method::POST)
-            .uri(url)
-            .header("Token", self.token)
-            .body(Body::from(body.to_string()))
-            .map_err(|err| OkaeriSdkError::ResponseError {
-                group: String::from("REQUEST_ERROR"),
-                message: String::from(format!("failed to create request: {}", err)),
-            })?;
-
-        let res = client.request(req).await
-            .map_err(|err| OkaeriSdkError::ResponseError {
-                group: String::from("REQUEST_ERROR"),
-                message: String::from(format!("failed to dispatch request: {}", err)),
-            })?;
-
-        if !res.status().is_success() {
-            let error = OkaeriSdkError::ResponseError {
-                group: String::from("REQUEST_ERROR"),
-                message: String::from(format!("received invalid status code {}", res.status())),
-            };
-            return Err(error);
-        }
-
-        let bytes = hyper::body::to_bytes(res).await
-            .map_err(|err| OkaeriSdkError::ResponseError {
-                group: String::from("REQUEST_ERROR"),
-                message: String::from(format!("failed to process request: {}", err)),
-            })?;
-
-        let body_str = String::from_utf8(bytes.to_vec())
-            .map_err(|err| OkaeriSdkError::ResponseError {
-                group: String::from("REQUEST_ERROR"),
-                message: String::from(format!("failed to convert body to string: {}", err)),
-            })?;
-
-        let info: CensorPredictionInfo = serde_json::from_str(&*body_str)
-            .map_err(|_| OkaeriSdkError::ResponseParseError { body: body_str })?;
-
-        Ok(info)
+        self.client.post::<CensorPredictionInfo>("/predict", &*body.to_string()).await
     }
 }

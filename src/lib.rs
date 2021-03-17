@@ -1,7 +1,5 @@
+mod client;
 mod aicensor;
-
-#[macro_use]
-extern crate serde_derive;
 
 use thiserror::Error;
 
