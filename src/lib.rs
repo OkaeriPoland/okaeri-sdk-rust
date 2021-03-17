@@ -1,7 +1,32 @@
+mod aicensor;
+
+#[macro_use]
+extern crate serde_derive;
+
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum OkaeriSdkError {
+    #[error("url '{url}' is invalid: {source:?}")]
+    InvalidUrl { url: String, source: url::ParseError },
+    #[error("cannot parse '{from}' to int")]
+    InvalidInt { from: String },
+    #[error("{group}: {message}")]
+    ResponseError { group: String, message: String },
+    #[error("cannot parse to json: '{body}'")]
+    ResponseParseError { body: String },
+}
+
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+    use actix_rt::test;
+    use crate::aicensor::AiCensor;
+
+    #[actix_rt::test]
+    async fn aicensor() {
+        let aicensor = AiCensor::new("")?;
+        let prediction = aicensor.get_prediction("hehe").await?;
+        let swear = prediction.general.swear;
+        println!("swear: {}", swear);
     }
 }
