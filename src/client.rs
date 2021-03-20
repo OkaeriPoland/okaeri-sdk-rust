@@ -35,13 +35,21 @@ pub(crate) struct OkaeriClient {
 }
 
 impl OkaeriClient {
-    pub fn new(base_url: Url, timeout: Duration, headers: HashMap<String, String>) -> Result<Self> {
+    pub fn new(
+        base_url: Url,
+        timeout: Duration,
+        mut headers: HashMap<String, String>,
+    ) -> Result<Self> {
         let https = HttpsConnector::new();
         let mut connector = TimeoutConnector::new(https);
         connector.set_connect_timeout(Some(timeout));
         connector.set_read_timeout(Some(timeout));
         connector.set_write_timeout(Some(timeout));
         let hyper = Client::builder().build::<_, hyper::Body>(connector);
+        headers.insert(
+            String::from("User-Agent"),
+            String::from("okaeri-sdk/1 (rust)"),
+        );
         Ok(OkaeriClient {
             base_url,
             hyper,
