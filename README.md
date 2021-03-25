@@ -1,10 +1,10 @@
 # Okaeri SDK for Rust
 
-![License](https://img.shields.io/github/license/OkaeriPoland/okaeri-sdk-java)
-![Total lines](https://img.shields.io/tokei/lines/github/OkaeriPoland/okaeri-sdk-java)
-![Repo size](https://img.shields.io/github/repo-size/OkaeriPoland/okaeri-sdk-java)
+![License](https://img.shields.io/github/license/OkaeriPoland/okaeri-sdk-rust)
+![Total lines](https://img.shields.io/tokei/lines/github/OkaeriPoland/okaeri-sdk-rust)
+![Repo size](https://img.shields.io/github/repo-size/OkaeriPoland/okaeri-sdk-rust)
 ![crates.io](https://img.shields.io/crates/v/okaeri-sdk)
-![Contributors](https://img.shields.io/github/contributors/OkaeriPoland/okaeri-sdk-java)
+![Contributors](https://img.shields.io/github/contributors/OkaeriPoland/okaeri-sdk-rust)
 [![Discord](https://img.shields.io/discord/589089838200913930)](https://discord.gg/hASN5eX)
 
 Currently supported services:
