@@ -1,6 +1,6 @@
-mod aicensor;
-mod client;
-mod noproxy;
+pub mod aicensor;
+pub mod client;
+pub mod noproxy;
 
 use thiserror::Error;
 

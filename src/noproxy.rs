@@ -78,7 +78,7 @@ impl NoProxy {
         Ok(NoProxy { client })
     }
 
-    pub(crate) async fn get_info(self, address: &str) -> Result<NoProxyAddressInfo> {
+    pub async fn get_info(self, address: &str) -> Result<NoProxyAddressInfo> {
         self.client.get(format!("/v1/{}", address)).await
     }
 }

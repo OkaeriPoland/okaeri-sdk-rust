@@ -1,6 +1,6 @@
 [package]
 name          = "okaeri-sdk"
-version       = "1.2.3"
+version       = "1.2.4"
 authors       = ["Dawid Sawicki <dawid@okaeri.eu>"]
 license       = "MIT"
 readme        = "README.md"

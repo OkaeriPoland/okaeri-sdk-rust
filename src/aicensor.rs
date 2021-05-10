@@ -68,7 +68,7 @@ impl AiCensor {
         Ok(AiCensor { client })
     }
 
-    pub(crate) async fn get_prediction(self, phrase: &str) -> Result<CensorPredictionInfo> {
+    pub async fn get_prediction(self, phrase: &str) -> Result<CensorPredictionInfo> {
         let body = json!({"phrase": phrase.to_owned()});
         self.client.post("/predict", &*body.to_string()).await
     }
